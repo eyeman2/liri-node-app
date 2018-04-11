@@ -7,32 +7,26 @@ var dotenv = require("dotenv");
 var fs = require("fs")
 var spotify = require("node-spotify-api");
 var twitKey = new client(keys.twitter);
-// console.log(keys.twitter)
 var spotKey = new spotify(keys.spotify);
 var command = process.argv[2];
 
 var value = process.argv[3];
 
-
-//
-
-//end of change
-
 if (command === 'my-tweets') {
     getTweets();
-    hold();
+    // hold();
 }
 
 
 //-----------------------------------------------------
 if (command === 'spotify-this-song') {
     getSpotify(value);
-    hold();
+    // hold();
 }
 //-------------------------------------------------------
 if (command == 'movie-this') {
     getOmdb();
-    hold();
+    // hold();
 }
 //-----------------------------------------------------
 
@@ -42,9 +36,6 @@ if (command == 'do-what-it-says') {
     
 
 }
-// getTweets()
-// getSpotify(value)
-// getOmdb()
 
 function getTweets() {
 
@@ -53,43 +44,57 @@ function getTweets() {
         count: 20,
     }
     twitKey.get('search/tweets', params, gotData);
-
+    
 
     function gotData(error, tweets, response) {
+        fs.appendFile('log.txt', '\r\n\r\n      TWEETS!!!  TWEETS!!!   TWEETS!!!\r\n', function(err){
+            if (err) {
+                console.log(err)
+            }
+    
+        })
         if (error) {
             console.log(error)
         }
-        // var tweets = data.statuses;
+
         else {
             for (let i = 0; i < tweets.statuses.length; i++) {
-                // const element = array[i];
-                
+                var logTxt = '\nPosted: ' + tweets.statuses[i].created_at + '\n' + tweets.statuses[i].text + '\n-----------------------------------------------------';
                 console.log('\nPosted: ' + tweets.statuses[i].created_at);
                 console.log(tweets.statuses[i].text);
-         
-            // console.log((response));
-            // for (var i = 0; i < data.statuses; i++) {
-            // console.log(JSONparse(data.statuses[i]).text);
-            // console.log(JSONparse(data.statuses[i]).created_at);
-            // console.log(data)   
+                console.log('-----------------------------------------------------');
+                
+                hold(logTxt);
+
         }
+
     }
     }
 }
 function getSpotify(value) {
+    fs.appendFile('log.txt', '\r\n \r\n\r\n                                    *********************SPOTIFY!!!***********************', function(err){
+        if (err) {
+            console.log(err)
+        }
+
+    })
     if (value == undefined) {
         value = "The Sign Ace of Base";
-        limit: 1;
+        
     }
     spotKey.search({ type: 'track', query: value, }, function (err, data) {
-
+        
         if (err) {
             return console.log(err)
         }
         else {
 
             for (var i = 0; i < data.tracks.items.length; i++) {
-
+                
+                var log = data.tracks.items.length
+                var logTxt = "\nArtist(s): " + (data.tracks.items[i].artists[0].name) + "\nSong Title: " +  data.tracks.items[i].name + 
+                "\nAlbum: " + data.tracks.items[i].album.name + "\nPreview: " + data.tracks.items[i].preview_url + "\n";
+                
                 console.log("\nArtist(s): " + (data.tracks.items[i].artists[0].name));
                 console.log("Song Title: " + data.tracks.items[i].name);
                 console.log("Album: " + data.tracks.items[i].album.name);
@@ -99,20 +104,21 @@ function getSpotify(value) {
                 else {
                     console.log("Preview: " + data.tracks.items[i].preview_url);
                 }
+                hold(logTxt)
             }
-            var artistName = [];
+            // var artistName = [];
             
-            for (let i = 0; i < data.tracks.items[i].artists.length; i++) {
-                // const element = array[i];
-                artistName.push()
-            }
+            // for (let i = 0; i < data.tracks.items[i].artists.length; i++) {
+
+            //     artistName.push()
+            // }
         }
 
 
     })
 }
 
-function getOmdb(){
+function getOmdb() {
     if (value == undefined) {
         value = "Mr. Nobody";
 
@@ -121,26 +127,23 @@ function getOmdb(){
         console.log("movie title defined" + value + "...");
     }
     var queryUrl = "http://www.omdbapi.com/?t=" + value + "&y=&plot=short&apikey=3e35db16";
+    fs.appendFile('log.txt', '\r\n\r\n MOVIES PICTURES FILMS FEATURES FLICKS TALKIES\r\n', function(err){
+        if (err) {
+            console.log(err)
+        }
+
+    })
 
     request(queryUrl, function (err, response, body) {
-
+        var logTxt = "\nTitle: " + JSON.parse(body).Title + '\nYear: ' + JSON.parse(body).Year + '\nIMDB Rating: ' + JSON.parse(body).imdbRating + '\nCountry ' + JSON.parse(body).Country + '\nLanguage: ' + JSON.parse(body).Language + '\nActors: ' + JSON.parse(body).Actors + '\nPlot: ' + JSON.parse(body).Plot + '\n';
         if (err) {
             return console.log(err)
         }
-
-        // if(!error && response.statusCode === 200){
-        //     console.log(movieName + " was released " + JSON.parse(body).Released)
-        // }
-        // if (value == '') {
-        //     value = 'Mr. Nobody';
-        //     return console.log('no movie picked.')
-        // }
 
         else {
             console.log("Title: " + JSON.parse(body).Title);
             console.log('Year: ' + JSON.parse(body).Year);
             console.log('IMDB Rating: ' + JSON.parse(body).imdbRating);
-            // console.log('Rotten Tomatoes Rating: ' + JSON.parse(body).Ratings[1].Value);
             console.log('Country ' + JSON.parse(body).Country);
             console.log('Language: ' + JSON.parse(body).Language);
             console.log('Actors: ' + JSON.parse(body).Actors);
@@ -154,6 +157,7 @@ function getOmdb(){
             console.log("Rotten Tomatoes Rating: N/A");
         }
 
+        hold(logTxt);
 
     })
 
@@ -169,22 +173,18 @@ function doIt() {
         if (err) {
             console.log(err)
         }
-        else if(command === "spotify-this-song") {
+        else if (command === "spotify-this-song") {
             getSpotify(value)
         }
         
     })
 }
 
-
-function hold(){
-    fs.appendFile('log.txt', console.log(''), function(err){
+function hold(logTxt){
+    fs.appendFile('log.txt', logTxt, function(err){
         if (err) {
             console.log(err)
         }
-        else {
 
-            console.log('data saved')
-        }
     })
 }
